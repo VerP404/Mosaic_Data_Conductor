@@ -1,0 +1,118 @@
+{
+  "tables": {
+    "load_data_talons": {
+      "file": {
+        "file_pattern": "journal_20*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Талон": "talon",
+        "Источник": "source",
+        "Статус": "status",
+        "Цель": "goal",
+        "Пациент": "patient",
+        "Дата рождения": "birth_date",
+        "Пол": "gender",
+        "Код СМО": "smo_code",
+        "ЕНП": "enp",
+        "Начало лечения": "treatment_start",
+        "Окончание лечения": "treatment_end",
+        "Врач": "doctor",
+        "Врач (Профиль МП)": "doctor_profile",
+        "Специальность": "specialty",
+        "Подразделение": "department",
+        "Посещения": "visits",
+        "Посещения в МО": "mo_visits",
+        "Посещения на Дому": "home_visits",
+        "Диагноз основной (DS1)": "main_diagnosis",
+        "Сопутствующий диагноз (DS2)": "additional_diagnosis",
+        "Первоначальная дата ввода": "initial_input_date",
+        "Дата последнего изменения": "last_change_date",
+        "Сумма": "amount",
+        "Санкции": "sanctions",
+        "КСГ": "ksg",
+        "Отчетный период выгрузки": "report_period"
+      },
+      "column_check": [
+        "talon",
+        "source"
+      ],
+      "encoding": "utf-8",
+      "delimiter": ";"
+    },
+    "data_loader_doctordata": {
+      "file": {
+        "file_pattern": "journal_doctor*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "СНИЛС": "snils",
+        "Код врача": "doctor_code",
+        "Фамилия": "last_name",
+        "Имя": "first_name",
+        "Отчество": "middle_name",
+        "Дата рождения": "birth_date",
+        "Пол": "gender",
+        "Дата начала работы": "start_date",
+        "Дата окончания работы": "end_date",
+        "Структурное подразделение": "department",
+        "Код профиля медпомощи": "medical_profile_code",
+        "Код специальности": "specialty_code",
+        "Код отделения": "department_code",
+        "Комментарий": "comment"
+      },
+      "column_check": [
+        "snils",
+        "doctor_code"
+      ],
+      "encoding": "utf-8",
+      "delimiter": ";"
+    },
+    "data_loader_detaileddata": {
+      "file": {
+        "file_pattern": "journal_deta*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Номер талона": "talon_number",
+        "Счет": "account_number",
+        "Дата выгрузки": "upload_date",
+        "Статус": "status",
+        "МО": "mo",
+        "Дата начала": "start_date",
+        "Дата окончания": "end_date",
+        "Серия полиса": "policy_series",
+        "Номер полиса": "policy_number",
+        "ЕНП": "enp",
+        "Фамилия": "last_name",
+        "Имя": "first_name",
+        "Отчество": "middle_name",
+        "Страховая организация": "insurance_org",
+        "Пол": "gender",
+        "Дата рождения": "birth_date",
+        "Тип талона": "talon_type",
+        "Основной диагноз": "main_diagnosis",
+        "Сопутствующий диагноз": "additional_diagnosis",
+        "Группа здоровья": "health_group",
+        "Доктор (Код)": "doctor_code",
+        "Доктор (ФИО)": "doctor_name",
+        "Стоимость": "cost",
+        "Название услуги": "service_name",
+        "Номенклатурный код услуги": "service_code",
+        "Доктор-Услуги (Код)": "service_doctor_code",
+        "Доктор-Услуги (ФИО)": "service_doctor_name",
+        "Дата-Услуги": "service_date",
+        "Статус-Услуги": "service_status",
+        "Маршрут": "route",
+        "Подразделение врача-Услуги": "service_department",
+        "Код МО (при оказ.услуги в другой МО)": "external_mo_code"
+      },
+      "column_check": [
+        "talon_number",
+        "service_code"
+      ],
+      "encoding": "utf-8",
+      "delimiter": ";"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+[project]
+name = "etl_wo"
+version = "0.1.0"
+description = "МозаикаМед"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "dagster",
+    "dagster-cloud",
+]
+
+[project.optional-dependencies]
+dev = [
+    "dagster-webserver", 
+    "pytest",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.dagster]
+module_name = "etl_wo.definitions"
+code_location_name = "etl_wo"
+
+[tool.setuptools.packages.find]
+exclude=["etl_wo_tests"]
