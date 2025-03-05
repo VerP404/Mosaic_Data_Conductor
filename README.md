@@ -1,11 +1,10 @@
-# etl_wo
+# Мозаика: поток данных
 
-This is a [Dagster](https://dagster.io/) project scaffolded with [`dagster project scaffold`](https://docs.dagster.io/guides/build/projects/creating-a-new-project).
 
-## Getting started
 
-First, install your Dagster code location as a Python package. By using the --editable flag, pip will install your Python package in ["editable mode"](https://pip.pypa.io/en/latest/topics/local-project-installs/#editable-installs) so that as you develop, local code changes will automatically apply.
+## Быстрый старт
 
+Клонируем репозиторий.
 ```bash
 pip install -e ".[dev]"
 ```
@@ -45,3 +44,6 @@ Once your Dagster Daemon is running, you can start turning on schedules and sens
 The easiest way to deploy your Dagster project is to use Dagster+.
 
 Check out the [Dagster+ documentation](https://docs.dagster.io/dagster-plus/) to learn more.
+
+
+![img.png](img.png)
