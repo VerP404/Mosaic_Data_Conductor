@@ -106,7 +106,7 @@ def selenium_download_oms(username, password, start_date, start_date_treatment, 
     driver.find_element(By.XPATH, '/html/body/div/form/input[2]').clear()
     driver.find_element(By.XPATH, '/html/body/div/form/input[2]').send_keys(password)
     driver.find_element(By.XPATH, '/html/body/div/form/input[2]').send_keys(Keys.ENTER)
-    time.sleep(30)
+    time.sleep(5)
     wait = WebDriverWait(driver, 120)
 
     # Ввод даты начала лечения (start_date_treatment)
@@ -166,10 +166,10 @@ def selenium_download_oms(username, password, start_date, start_date_treatment, 
     config_schema={
         "download_mode": Field(StringSource, default_value="auto", is_required=False),
         "browser": Field(StringSource, default_value="chrome", is_required=False),
-        "organization": Field(StringSource, default_value="local", is_required=False)
+        "organization": Field(StringSource, default_value="default", is_required=False)
     }
 )
-def download_oms_file(context: OpExecutionContext) -> str:
+def talon_download_oms_file(context: OpExecutionContext) -> str:
     """
     1) Перед запуском очищаем папку etl_wo/data
     2) Если download_mode == "manual", ищем journal_*.csv в папке

@@ -3,19 +3,19 @@ import pandas as pd
 from dagster import asset, OpExecutionContext
 
 @asset
-def transform(context: OpExecutionContext, extract: dict):
+def talon_transform(context: OpExecutionContext, talon_extract: dict):
     """
     Применяет маппинг колонок, заполняет отсутствующие значения дефолтами,
     и определяет, какие строки являются комплексными (если для пары (talon, source)
     найдено более одной записи). Затем разделяет данные на два датафрейма.
     """
-    if extract is None:
+    if talon_extract is None:
         text_value = f"❌ Ошибка: extract не передал данные!"
         context.log.info(text_value)
         raise ValueError(text_value)
 
-    table_name = extract.get("table_name", "Неизвестная таблица")
-    df = extract.get("data", None)
+    table_name = talon_extract.get("table_name", "Неизвестная таблица")
+    df = talon_extract.get("data", None)
     if df is None:
         text_value = f"❌ Ошибка: Данные для {table_name} отсутствуют!"
         context.log.info(text_value)

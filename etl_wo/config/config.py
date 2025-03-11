@@ -20,7 +20,10 @@ config = {
                 "browser": os.environ.get("ORG_SELENIUM_BROWSER", "chrome"),
                 "oms_username": os.environ.get("ORG_SELENIUM_OMS_USERNAME"),
                 "oms_password": os.environ.get("ORG_SELENIUM_OMS_PASSWORD"),
+                "pzl_username": os.environ.get("ORG_SELENIUM_PZL_USERNAME"),
+                "pzl_password": os.environ.get("ORG_SELENIUM_PZL_PASSWORD"),
             },
+
         }
     }
 }

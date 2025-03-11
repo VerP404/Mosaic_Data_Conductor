@@ -14,7 +14,7 @@ with open(MAPPING_PATH, "r", encoding="utf-8") as f:
 
 
 @asset
-def extract(context: OpExecutionContext, check_db: dict, download_oms_file: str) -> dict:
+def talon_extract(context: OpExecutionContext, check_db: dict, talon_download_oms_file: str) -> dict:
     """
     Извлекает CSV-файл из папки data.
     Для каждой таблицы из mapping.json ищет файлы по шаблону и выбирает последний (отсортированный по имени).
@@ -56,7 +56,8 @@ def extract(context: OpExecutionContext, check_db: dict, download_oms_file: str)
     df = pd.read_csv(
         file_path,
         encoding=table_config["encoding"],
-        delimiter=table_config["delimiter"]
+        delimiter=table_config["delimiter"],
+        dtype=str
     )
     text_value = f"📥 Загружено {len(df)} строк из {matched_file}"
     context.log.info(text_value)

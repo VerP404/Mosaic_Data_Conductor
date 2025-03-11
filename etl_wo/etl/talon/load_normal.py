@@ -13,9 +13,9 @@ organizations = env_config.get("organizations", {})
         "organization": Field(StringSource, default_value="local", is_required=False)
     }
 )
-def load_normal(context: OpExecutionContext, transform: dict):
+def talon_load_normal(context: OpExecutionContext, talon_transform: dict):
     """Загружает данные для обычных талонов в таблицу load_data_talons."""
-    payload = transform.get("normal", {})
+    payload = talon_transform.get("normal", {})
     table_name = payload.get("table_name")
     data = payload.get("data")
 

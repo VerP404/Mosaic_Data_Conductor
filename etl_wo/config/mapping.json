@@ -40,7 +40,7 @@
       "encoding": "utf-8",
       "delimiter": ";"
     },
-    "data_loader_doctordata": {
+    "load_data_doctordata": {
       "file": {
         "file_pattern": "journal_doctor*",
         "file_format": "csv"
@@ -68,7 +68,7 @@
       "encoding": "utf-8",
       "delimiter": ";"
     },
-    "data_loader_detaileddata": {
+    "load_data_detaileddata": {
       "file": {
         "file_pattern": "journal_deta*",
         "file_format": "csv"
@@ -112,6 +112,47 @@
         "service_code"
       ],
       "encoding": "utf-8",
+      "delimiter": ";"
+    },
+    "load_data_sick_leave_sheets": {
+      "file": {
+        "file_pattern": "ЛН_*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Номер": "number",
+        "ЭЛН": "eln",
+        "Дубликат": "duplicate",
+        "Статус": "status",
+        "Статус ФСС": "fss_status",
+        "Дата выдачи": "issue_date",
+        "Первичный": "first",
+        "Предыдущий ЛН": "previous_ln",
+        "Следущий ЛН": "next_ln",
+        "Фамилия пациента": "patient_last_name",
+        "Имя пациента": "patient_first_name",
+        "Отчество пациента": "patient_middle_name",
+        "Дата рождения": "birth_date",
+        "Пол": "gender",
+        "СНИЛС": "snils",
+        "Возраст": "age",
+        "Место работы": "workplace",
+        "Код причины нетрудоспособности": "incapacity_reason_code",
+        "МКБ": "mkb",
+        "Период нетрудоспособности: дата начала": "incapacity_start_date",
+        "Период нетрудоспособности: дата окончания": "incapacity_end_date",
+        "Количество дней": "days_count",
+        "ТВСП": "tvsp",
+        "Выдавший врач": "issuing_doctor",
+        "Закрывший врач": "closing_doctor",
+        "Дата закрытия": "closing_date",
+        "№ истории болезни": "history_number",
+        "Уход за больными": "patient_care"
+      },
+      "column_check": [
+        "number"
+      ],
+      "encoding": "cp1251",
       "delimiter": ";"
     }
   }

@@ -13,9 +13,9 @@ organizations = env_config.get("organizations", {})
         "organization": Field(StringSource, default_value="local", is_required=False)
     }
 )
-def load_complex(context: OpExecutionContext, transform: dict):
+def talon_load_complex(context: OpExecutionContext, talon_transform: dict):
     """Загружает данные для комплексных талонов в таблицу load_data_complex_talons."""
-    payload = transform.get("complex", {})
+    payload = talon_transform.get("complex", {})
     table_name = payload.get("table_name")
     data = payload.get("data")
 
