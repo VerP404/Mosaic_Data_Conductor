@@ -1,32 +1,20 @@
 import dagster as dg
-from etl_wo.etl.check_db import check_db
-from etl_wo.etl.eln.extract import sick_leave_extract
-from etl_wo.etl.eln.transform import sick_leave_transform
-from etl_wo.etl.eln.load import sink_leave_load
-from etl_wo.etl.talon.download_oms_file import talon_download_oms_file
-from etl_wo.etl.talon.extract import talon_extract
-from etl_wo.etl.talon.transform import talon_transform
-from etl_wo.etl.talon.load_normal import talon_load_normal
-from etl_wo.etl.talon.load_complex import talon_load_complex
-from etl_wo.etl.people.download_people_iszl import download_pzl_people_file
-from etl_wo.schedule import daily_oms_schedule, daily_sick_leave_schedule
 
-all_assets = [download_pzl_people_file,
-              check_db,
-              talon_download_oms_file,
-              talon_extract,
-              talon_transform,
-              talon_load_normal,
-              talon_load_complex,
+# Импортируем asset-ы из вашего потока (job1)
+from etl_wo.jobs.job1.db_check import db_check
+from etl_wo.jobs.job1.extract import talon_extract2
+# Импортируем job, определённую вручную в __init__.py
+from etl_wo.jobs.job1 import job_talons
 
-              sick_leave_extract,
-              sick_leave_transform,
-              sink_leave_load
+# Собираем все assets в список
+all_assets = [
+    db_check,
+    talon_extract2,
+]
 
-
-              ]
-
+# Регистрируем assets и job в Definitions
 defs = dg.Definitions(
     assets=all_assets,
-    schedules=[daily_oms_schedule, daily_sick_leave_schedule],
+    jobs=[job_talons],
+    schedules=[],  # Добавьте расписания, если они нужны
 )

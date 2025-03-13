@@ -1,15 +1,15 @@
 from dagster import job, schedule
-from etl_wo.etl.check_db import check_db
+from etl_wo.jobs.check_db import check_db
 
-from etl_wo.etl.talon.download_oms_file import talon_download_oms_file
-from etl_wo.etl.talon.extract import talon_extract
-from etl_wo.etl.talon.transform import talon_transform
-from etl_wo.etl.talon.load_normal import talon_load_normal
-from etl_wo.etl.talon.load_complex import talon_load_complex
+from etl_wo.jobs.talon.download_oms_file import talon_download_oms_file
+from etl_wo.jobs.talon.extract import talon_extract
+from etl_wo.jobs.talon.transform import talon_transform
+from etl_wo.jobs.talon.load_normal import talon_load_normal
+from etl_wo.jobs.talon.load_complex import talon_load_complex
 
-from etl_wo.etl.eln.extract import sick_leave_extract
-from etl_wo.etl.eln.transform import sick_leave_transform
-from etl_wo.etl.eln.load import sink_leave_load
+from etl_wo.jobs.eln.extract import sick_leave_extract
+from etl_wo.jobs.eln.transform import sick_leave_transform
+from etl_wo.jobs.eln.load import sink_leave_load
 
 
 # Обработчик для талонов ОМС

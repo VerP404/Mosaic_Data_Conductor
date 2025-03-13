@@ -179,3 +179,4 @@ exponent.txt
 
 # google cloud storage emulater
 .cloudstorage/
+/etl_wo/data/

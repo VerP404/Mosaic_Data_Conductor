@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def str_to_bool(s):
@@ -27,3 +30,15 @@ config = {
         }
     }
 }
+
+DATABASES = {
+    'default': {
+        'dbname': os.environ.get('DB_NAME'),
+        'user': os.environ.get('DB_USER'),
+        'password': os.environ.get('DB_PASSWORD'),
+        'host': os.environ.get('DB_HOST'),
+        'port': os.environ.get('DB_PORT'),
+    }
+}
+
+ORGANIZATIONS = os.environ.get('ORGANIZATIONS', 'default11111')
