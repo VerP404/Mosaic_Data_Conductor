@@ -1,18 +1,17 @@
 import dagster as dg
-
-# Импортируем asset-ы из вашего потока (job1)
 from etl_wo.jobs.job1.db_check import db_check
 from etl_wo.jobs.job1.extract import talon_extract2
-# Импортируем job, определённую вручную в __init__.py
-from etl_wo.jobs.job1 import job_talons
+from etl_wo.jobs.job1.transform import talon_transform2
+from etl_wo.jobs.job1 import job_talons, talon_load_complex, talon_load_normal
 
-# Собираем все assets в список
 all_assets = [
     db_check,
     talon_extract2,
+    talon_transform2,
+    talon_load_complex,
+    talon_load_normal
 ]
 
-# Регистрируем assets и job в Definitions
 defs = dg.Definitions(
     assets=all_assets,
     jobs=[job_talons],

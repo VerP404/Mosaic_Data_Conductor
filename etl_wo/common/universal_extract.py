@@ -9,7 +9,7 @@ def universal_extract(
         context: OpExecutionContext,
         mapping_file: str,
         data_folder: str,
-        table_key: str
+        table_name: str
 ) -> dict:
     """
     Универсальная функция для извлечения данных.
@@ -18,7 +18,7 @@ def universal_extract(
       context: Dagster execution context
       mapping_file: Путь к файлу mapping.json с настройками таблиц
       data_folder: Путь к папке, в которой находятся файлы данных (CSV)
-      table_key: Ключ таблицы в mapping.json, для которой производится поиск файла
+      table_name: Имя таблицы в mapping.json, для которой производится поиск файла
 
     Функция:
       1. Загружает настройки из mapping.json.
@@ -37,10 +37,10 @@ def universal_extract(
     with open(mapping_file, "r", encoding="utf-8") as f:
         mappings = json.load(f)
 
-    table_config = mappings.get("tables", {}).get(table_key)
+    table_config = mappings.get("tables", {}).get(table_name)
     if not table_config:
-        context.log.info(f"❌ Настройки для таблицы '{table_key}' не найдены в {mapping_file}.")
-        raise ValueError(f"❌ Настройки для таблицы '{table_key}' не найдены.")
+        context.log.info(f"❌ Настройки для таблицы '{table_name}' не найдены в {mapping_file}.")
+        raise ValueError(f"❌ Настройки для таблицы '{table_name}' не найдены.")
 
     file_pattern = table_config.get("file", {}).get("file_pattern", "")
     file_format = table_config.get("file", {}).get("file_format", "")
@@ -80,4 +80,4 @@ def universal_extract(
     text_value = f"📥 Загружено {len(df)} строк из {matched_file}"
     context.log.info(text_value)
 
-    return {"table_name": table_key, "data": df}
+    return {"table_name": table_name, "data": df}

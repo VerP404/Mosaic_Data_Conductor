@@ -1,11 +1,13 @@
 from dagster import asset, Field, String, OpExecutionContext, AssetIn
 
+from etl_wo.jobs.job1.flow_config import TABLE_NAME, MAPPING_FILE, DATA_FOLDER
+
 
 @asset(
     config_schema={
-        "mapping_file": Field(String, default_value="etl_wo/config/mapping.json"),
-        "data_folder": Field(String, default_value="etl_wo/data/talon"),
-        "table_key": Field(String, default_value="load_data_talons"),
+        "mapping_file": Field(String, default_value=MAPPING_FILE),
+        "data_folder": Field(String, default_value=DATA_FOLDER),
+        "table_name": Field(String, default_value=TABLE_NAME),
     },
     ins={"db_check": AssetIn()}
 )
@@ -19,8 +21,8 @@ def talon_extract2(context: OpExecutionContext, db_check: dict) -> dict:
     config = context.op_config
     mapping_file = config["mapping_file"]
     data_folder = config["data_folder"]
-    table_key = config["table_key"]
+    table_name = config["table_name"]
 
     from etl_wo.common.universal_extract import universal_extract
-    result = universal_extract(context, mapping_file, data_folder, table_key)
+    result = universal_extract(context, mapping_file, data_folder, table_name)
     return result

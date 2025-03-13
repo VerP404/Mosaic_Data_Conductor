@@ -1,0 +1,5 @@
+MAPPING_FILE = "etl_wo/config/mapping.json"
+DATA_FOLDER = "etl_wo/data/talon"
+TABLE_NAME = "load_data_talons"
+NORMAL_TABLE = "load_data_talons"
+COMPLEX_TABLE = "load_data_complex_talons"

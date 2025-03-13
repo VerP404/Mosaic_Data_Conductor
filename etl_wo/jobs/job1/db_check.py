@@ -1,12 +1,13 @@
 from dagster import asset, Field, Array, String, OpExecutionContext
 from etl_wo.common.check_db import check_db
 from etl_wo.config.config import ORGANIZATIONS
+from etl_wo.jobs.job1.flow_config import TABLE_NAME
 
 
 @asset(
     config_schema={
         "organization": Field(String, default_value=ORGANIZATIONS),
-        "tables": Field(Array(String), default_value=["load_data_talons"])
+        "tables": Field(Array(String), default_value=[TABLE_NAME])
     }
 )
 def db_check(context: OpExecutionContext) -> dict:
