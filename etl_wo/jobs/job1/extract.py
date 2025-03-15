@@ -9,11 +9,11 @@ from etl_wo.jobs.job1.flow_config import TABLE_NAME, MAPPING_FILE, DATA_FOLDER
         "data_folder": Field(String, default_value=DATA_FOLDER),
         "table_name": Field(String, default_value=TABLE_NAME),
     },
-    ins={"db_check": AssetIn()}
+    ins={"talon_db_check": AssetIn()}
 )
-def talon_extract2(context: OpExecutionContext, db_check: dict) -> dict:
+def talon_extract2(context: OpExecutionContext, talon_db_check: dict) -> dict:
     """
-    Извлекает CSV-файл для таблицы 'load_data_talons'.
+    Извлекает CSV-файл для таблицы.
     Перед выполнением происходит проверка БД (результат передаётся через db_check).
     Все параметры можно переопределить через интерфейс Dagster.
     """

@@ -1,4 +1,4 @@
-from dagster import asset, OpExecutionContext, AssetIn
+from dagster import asset, OpExecutionContext, Field, StringSource, AssetIn
 from etl_wo.common.universal_load import load_dataframe
 
 def normal_sql_generator(data, table_name):
@@ -17,6 +17,10 @@ def normal_sql_generator(data, table_name):
         yield sql, tuple(row[col] for col in cols)
 
 @asset(
+    config_schema={
+        "organization": Field(StringSource, default_value="default", is_required=False),
+        "table_name": Field(StringSource, default_value="load_data_sick_leave_sheets", is_required=False)
+    },
     ins={"talon_transform2": AssetIn()}
 )
 def talon_load_normal(context: OpExecutionContext, talon_transform2: dict):
