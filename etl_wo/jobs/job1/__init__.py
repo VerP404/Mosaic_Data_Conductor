@@ -5,6 +5,15 @@ from .transform import talon_transform2
 from .load_normal import talon_load_normal
 from .load_complex import talon_load_complex
 
+talons_assets = [
+    talon_db_check,
+    talon_extract2,
+    talon_transform2,
+    talon_load_complex,
+    talon_load_normal
+]
+
+
 @job(name="job_talons")
 def job_talons():
     db_result = talon_db_check()

@@ -5,6 +5,13 @@ from .extract import eln_extract
 from .load import eln_load
 from .transform import eln_transform
 
+eln_assets = [
+    eln_db_check,
+    eln_extract,
+    eln_transform,
+    eln_load
+]
+
 
 @job(name="job_eln")
 def job_eln():
