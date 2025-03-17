@@ -2,7 +2,15 @@ import os
 import time
 import json
 import fnmatch
-from dagster import sensor, RunRequest, SkipReason
+
+from dagster import (
+    sensor,
+    RunRequest,
+    SkipReason,
+    DagsterInstance,  # для get_runs
+    RunStatus
+)
+from dagster._core.storage.pipeline_run import RunsFilter
 
 from etl_wo.jobs.eln import job_eln
 from etl_wo.jobs.eln.flow_config import DATA_FOLDER, MAPPING_FILE, TABLE_NAME
@@ -10,29 +18,37 @@ from etl_wo.jobs.eln.flow_config import DATA_FOLDER, MAPPING_FILE, TABLE_NAME
 # Порог времени, чтобы считать, что файл полностью загружен (в секундах)
 MIN_FILE_AGE_SECONDS = 60
 
+
 def _load_state(context) -> dict:
+    """Загружаем из cursor словарь вида {filename: run_key}."""
     if context.cursor:
         return json.loads(context.cursor)
     return {}
 
+
 def _save_state(context, state: dict):
+    """Сохраняем словарь {filename: run_key} в cursor сенсора."""
     context.update_cursor(json.dumps(state))
+
 
 @sensor(job=job_eln)
 def eln_folder_monitor_sensor(context):
     """
-    Сенсор для мониторинга папки DATA_FOLDER с учетом состояния:
-      1. Если файл уже обрабатывается (Run не завершён), повторно не запускаем.
-      2. Если предыдущая обработка файла завершилась успехом - удаляем файл и чистим состояние.
-      3. Если предыдущая обработка файла завершилась ошибкой - перезапускаем обработку.
+    Сенсор для мониторинга папки DATA_FOLDER с учётом состояния:
+      1. Если файл уже обрабатывается (запуск с run_key ещё идёт), повторно не запускаем.
+      2. Если предыдущая обработка завершилась успехом – удаляем файл и чистим состояние.
+      3. Если предыдущая обработка завершилась ошибкой – перезапускаем (создаём новый run_key).
     """
-    sensor_state = _load_state(context)
 
+    sensor_state = _load_state(context)  # {filename: run_key}
+
+    # 1. Проверяем наличие файла маппинга
     if not os.path.exists(MAPPING_FILE):
         context.log.info(f"❌ Файл маппинга {MAPPING_FILE} не найден.")
         yield SkipReason("Mapping file not found.")
         return
 
+    import json
     with open(MAPPING_FILE, "r", encoding="utf-8") as f:
         mapping = json.load(f)
     table_config = mapping.get("tables", {}).get(TABLE_NAME)
@@ -45,6 +61,7 @@ def eln_folder_monitor_sensor(context):
     file_format = table_config.get("file", {}).get("file_format", "")
     valid_pattern = f"{file_pattern}.{file_format}"
 
+    # 2. Проверяем папку с данными
     if not os.path.exists(DATA_FOLDER):
         context.log.info(f"❌ Папка {DATA_FOLDER} не найдена.")
         yield SkipReason("Data folder not found.")
@@ -60,6 +77,7 @@ def eln_folder_monitor_sensor(context):
     valid_files = []
     invalid_files = []
 
+    # 3. Разделяем файлы на валидные и невалидные
     for file in files:
         file_path = os.path.join(DATA_FOLDER, file)
         if fnmatch.fnmatch(file, valid_pattern):
@@ -72,6 +90,7 @@ def eln_folder_monitor_sensor(context):
         else:
             invalid_files.append(file)
 
+    # 4. Удаляем невалидные файлы
     for file in invalid_files:
         file_path = os.path.join(DATA_FOLDER, file)
         try:
@@ -85,24 +104,29 @@ def eln_folder_monitor_sensor(context):
         yield SkipReason("Нет валидных файлов.")
         return
 
+    # 5. Для каждого валидного файла проверяем состояние
     for file in valid_files:
         file_path = os.path.join(DATA_FOLDER, file)
 
         if file in sensor_state:
-            run_id = sensor_state[file]
-            run = context.instance.get_run_by_id(run_id)
-
-            if not run:
-                context.log.warning(f"Run с id={run_id} не найден. Создаём новый запуск для файла {file}")
+            # Файл уже запускался, проверим, чем закончился запуск
+            existing_run_key = sensor_state[file]
+            runs = context.instance.get_runs(filters=RunsFilter(run_keys=[existing_run_key]))
+            if not runs:
+                # Не нашли run с таким ключом – возможно, что-то пошло не так, убираем ключ и даём новый запуск
+                context.log.warning(f"Не нашли Run c run_key={existing_run_key}. Перезапускаем для файла {file}.")
                 del sensor_state[file]
             else:
-                if run.status in (
-                    "NOT_STARTED", "STARTING", "QUEUED", "MANAGED", "STARTED", "CANCELING"
-                ):
-                    context.log.info(f"Файл {file} уже обрабатывается в run_id={run_id}, статус={run.status}. Пропускаем.")
+                run = runs[-1]  # обычно будет один, но возьмём последний
+                status = run.status
+                context.log.info(f"Файл={file}, run_key={existing_run_key}, status={status}.")
+
+                if status in (RunStatus.NOT_STARTED, RunStatus.STARTING, RunStatus.QUEUED, RunStatus.STARTED, RunStatus.MANAGED, RunStatus.CANCELING):
+                    # Запуск ещё идёт – пропускаем
                     continue
 
-                if run.status == "SUCCESS":
+                if status == RunStatus.SUCCESS:
+                    # Успешно – удаляем файл, очищаем состояние
                     try:
                         os.remove(file_path)
                         context.log.info(f"Файл {file} успешно обработан и удалён.")
@@ -111,12 +135,18 @@ def eln_folder_monitor_sensor(context):
                     del sensor_state[file]
                     continue
 
-                if run.status in ("FAILURE", "CANCELED"):
-                    context.log.warning(f"Файл {file} завершился ошибкой (run_id={run_id}, статус={run.status}). Перезапускаем.")
+                if status in (RunStatus.FAILURE, RunStatus.CANCELED):
+                    # Ошибка – убираем запись и дадим новый запуск
+                    context.log.warning(f"Файл {file} завершился ошибкой. Будет повторная попытка.")
                     del sensor_state[file]
 
+        # Если мы дошли сюда, значит:
+        # - файла нет в sensor_state
+        # ИЛИ
+        # - мы только что удалили его оттуда (ошибка или run не найден)
         if file not in sensor_state:
-            context.log.info(f"Запуск процесса обновления для файла: {file}")
+            new_run_key = f"{file}-{int(time.time())}"
+            context.log.info(f"Запуск процесса обновления для файла {file} c run_key={new_run_key}.")
 
             run_config = {
                 "ops": {
@@ -130,12 +160,12 @@ def eln_folder_monitor_sensor(context):
                 }
             }
 
-            # Здесь мы используем run_key как уникальное сочетание имени файла и текущего времени,
-            # чтобы предотвратить повторный запуск до обновления состояния.
-            run_key = f"{file}-{int(time.time())}"
-            run_request = RunRequest(run_key=run_key, run_config=run_config)
-            yield run_request
+            yield RunRequest(
+                run_key=new_run_key,
+                run_config=run_config
+            )
+            # Запомним, что для этого файла был запуск
+            sensor_state[file] = new_run_key
 
-            sensor_state[file] = run_request.run_key  # Здесь сохраняем run_key как индикатор того, что запуск инициирован
-
+    # 6. Сохраняем обновлённое состояние
     _save_state(context, sensor_state)
