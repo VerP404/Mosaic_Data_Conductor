@@ -1,7 +1,9 @@
 pandas~=2.2.3
 dagster~=1.10.3
+dagit
 SQLAlchemy~=2.0.38
 numpy~=2.2.3
 selenium~=4.29.0
 setuptools~=65.5.0
 python-dotenv~=1.0.1
+psycopg2-binary

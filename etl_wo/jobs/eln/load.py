@@ -1,5 +1,20 @@
+import glob
+import os
+
 from dagster import asset, OpExecutionContext, Field, StringSource, AssetIn
 from etl_wo.common.universal_load import load_dataframe
+from etl_wo.jobs.eln.flow_config import DATA_FOLDER
+
+
+def clear_data_folder(data_folder):
+    # Получаем список всех файлов в папке
+    files = glob.glob(os.path.join(data_folder, '*'))
+    for file in files:
+        try:
+            os.remove(file)
+            print(f"Удалён файл: {file}")
+        except Exception as e:
+            print(f"Не удалось удалить {file}: {e}")
 
 
 def eln_sql_generator(data, table_name):
@@ -35,4 +50,11 @@ def eln_load(context: OpExecutionContext, eln_transform: dict):
         context.log.info(f"ℹ️ Нет данных для загрузки в таблицу {table_name}.")
         return {"table_name": table_name, "status": "skipped"}
 
-    return load_dataframe(context, table_name, data, db_alias="default", sql_generator=eln_sql_generator)
+    result = load_dataframe(context, table_name, data, db_alias="default", sql_generator=eln_sql_generator)
+
+    # Если загрузка прошла успешно, очищаем папку DATA_FOLDER и выводим сообщение
+    if result.get("status") == "success":
+        clear_data_folder(DATA_FOLDER)
+        context.log.info("Папка очищена")
+
+    return result

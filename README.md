@@ -1,49 +1,132 @@
-# Мозаика: поток данных
+# Мозаика: поток данных - Инструкция по разворачиванию на продуктовом сервере Ubuntu
 
+Эта инструкция описывает пошаговый процесс разворачивания
+проекта [Mosaic_Data_Conductor](https://github.com/VerP404/Mosaic_Data_Conductor) на продуктовом сервере Ubuntu без
+использования Docker. Инструкция основана на [официальной документации Dagster](https://docs.dagster.io/) и включает
+рекомендации по настройке виртуального окружения, переменных окружения и службы systemd для веб-сервера и демона.
 
+> **Примечание:** Перед выполнением инструкций убедитесь, что у вас есть пользователь с правами на установку пакетов и
+> настройку служб.
 
-## Быстрый старт
+---
 
-Клонируем репозиторий.
-```bash
-pip install -e ".[dev]"
-```
-
-Then, start the Dagster UI web server:
-
-```bash
-dagster dev
-```
-
-Open http://localhost:3000 with your browser to see the project.
-
-You can start writing assets in `etl_wo/assets.py`. The assets are automatically loaded into the Dagster code location as you define them.
-
-## Development
-
-### Adding new Python dependencies
-
-You can specify new Python dependencies in `setup.py`.
-
-### Unit testing
-
-Tests are in the `etl_wo_tests` directory and you can run tests using `pytest`:
+## 1. Клонирование репозитория
 
 ```bash
-pytest etl_wo_tests
+git clone https://github.com/VerP404/Mosaic_Data_Conductor.git
+cd Mosaic_Data_Conductor
 ```
 
-### Schedules and sensors
+## 2. Создание и настройка виртуального окружения
 
-If you want to enable Dagster [Schedules](https://docs.dagster.io/guides/automate/schedules/) or [Sensors](https://docs.dagster.io/guides/automate/sensors/) for your jobs, the [Dagster Daemon](https://docs.dagster.io/guides/deploy/execution/dagster-daemon) process must be running. This is done automatically when you run `dagster dev`.
+1. Создание и активация виртуального окружения
 
-Once your Dagster Daemon is running, you can start turning on schedules and sensors for your jobs.
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
 
-## Deploy on Dagster+
+2. Установка зависимостей проекта
 
-The easiest way to deploy your Dagster project is to use Dagster+.
+```bash
+pip install -r requirements.txt
+```
 
-Check out the [Dagster+ documentation](https://docs.dagster.io/dagster-plus/) to learn more.
+## 3. Настройка Dagster
 
+### 3.1. Создание директории для Dagster Instance
 
+```bash
+mkdir -p dagster_home
+```
+
+### 3.2. Создание файла конфигурации dagster.yaml
+
+```bash
+sudo nano dagster_home/dagster.yaml
+```
+
+Можно добавить базовую конфигурацию для очереди (опционально):
+
+```bash
+run_coordinator:
+  module: dagster._core.run_coordinator
+  class: QueuedRunCoordinator
+
+run_launcher:
+  module: dagster._core.launcher.default_run_launcher
+  class: DefaultRunLauncher
+```
+
+### 3.3. Установка переменной окружения DAGSTER_HOME
+
+```bash
+echo 'export DAGSTER_HOME=/home/{user}/code/Mosaic_Data_Conductor/dagster_home' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Проверьте, что переменная установлена:
+
+```bash
+echo $DAGSTER_HOME
+```
+
+## 4. Настройка systemd служб для Dagster
+### 4.1. Служба для Dagster Webserver
+Создайте файл `sudo nano /etc/systemd/system/dagster-webserver.service`
+
+```bash
+[Unit]
+Description=Dagster Webserver
+After=network.target
+
+[Service]
+User={user}
+WorkingDirectory=/home/{user}/code/Mosaic_Data_Conductor
+ExecStart=/home/{user}/code/Mosaic_Data_Conductor/.venv/bin/dagster-webserver --host 0.0.0.0 --port 3000
+Restart=on-failure
+Environment=DAGSTER_HOME=/home/{user}/code/Mosaic_Data_Conductor/dagster_home
+
+[Install]
+WantedBy=multi-user.target
+```
+### 4.2. Служба для Dagster Daemon
+Создайте файл `sudo nano /etc/systemd/system/dagster-daemon.service`
+
+```bash
+[Unit]
+Description=Dagster Daemon
+After=network.target
+
+[Service]
+User={user}
+WorkingDirectory=/home/{user}/code/Mosaic_Data_Conductor
+ExecStart=/home/{user}/code/Mosaic_Data_Conductor/.venv/bin/dagster-daemon run
+Restart=on-failure
+Environment=DAGSTER_HOME=/home/{user}/code/Mosaic_Data_Conductor/dagster_home
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 4.3. Перезагрузка systemd и запуск служб
+
+```bash
+sudo systemctl daemon-reload
+
+sudo systemctl start dagster-webserver.service
+sudo systemctl enable dagster-webserver.service
+
+sudo systemctl start dagster-daemon.service
+sudo systemctl enable dagster-daemon.service
+```
+
+Проверьте статус служб:
+
+```bash
+sudo systemctl status dagster-webserver.service
+sudo systemctl status dagster-daemon.service
+```
+
+Конфигурация для запуска в pycharm для разработки:
 ![img.png](img.png)
