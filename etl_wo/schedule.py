@@ -7,9 +7,9 @@ from etl_wo.jobs.talon.transform import talon_transform
 from etl_wo.jobs.talon.load_normal import talon_load_normal
 from etl_wo.jobs.talon.load_complex import talon_load_complex
 
-from etl_wo.jobs.eln.extract import sick_leave_extract
-from etl_wo.jobs.eln.transform import eln_transform
-from etl_wo.jobs.eln.load import sink_leave_load
+from etl_wo.jobs.kvazar.extract import sick_leave_extract
+from etl_wo.jobs.kvazar.transform import kvazar_transform
+from etl_wo.jobs.kvazar.load import sink_leave_load
 
 
 # Обработчик для талонов ОМС
@@ -35,7 +35,7 @@ def daily_oms_schedule(context):
 @job(name="sick_leave_job")
 def sick_leave_job():
     ext = sick_leave_extract()
-    trans = eln_transform(sick_leave_extract=ext)
+    trans = kvazar_transform(sick_leave_extract=ext)
     sink_leave_load(sick_leave_transform=trans)
 
 

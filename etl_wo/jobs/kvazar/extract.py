@@ -1,17 +1,16 @@
 from dagster import asset, Field, String, OpExecutionContext, AssetIn
 
-from etl_wo.jobs.eln.flow_config import MAPPING_FILE, DATA_FOLDER, TABLE_NAME
 
 
 @asset(
     config_schema={
-        "mapping_file": Field(String, default_value=MAPPING_FILE),
-        "data_folder": Field(String, default_value=DATA_FOLDER),
-        "table_name": Field(String, default_value=TABLE_NAME),
+        "mapping_file": Field(String),
+        "data_folder": Field(String),
+        "table_name": Field(String),
     },
-    ins={"eln_db_check": AssetIn()}
+    ins={"kvazar_db_check": AssetIn()}
 )
-def eln_extract(context: OpExecutionContext, eln_db_check: dict) -> dict:
+def kvazar_extract(context: OpExecutionContext, kvazar_db_check: dict) -> dict:
     """
     Извлекает CSV-файл для таблицы.
     Перед выполнением происходит проверка БД (результат передаётся через db_check).

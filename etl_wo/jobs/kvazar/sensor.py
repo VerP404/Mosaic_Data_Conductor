@@ -4,8 +4,7 @@ import json
 import fnmatch
 
 from dagster import sensor, RunRequest, SkipReason
-from etl_wo.jobs.eln import job_eln
-from etl_wo.jobs.eln.flow_config import DATA_FOLDER, MAPPING_FILE, TABLE_NAME
+from etl_wo.jobs.kvazar import job_eln
 
 # Порог времени, чтобы считать, что файл полностью загружен (в секундах)
 MIN_FILE_AGE_SECONDS = 60
@@ -21,27 +20,30 @@ def _save_state(context, state: dict):
     context.update_cursor(json.dumps(state))
 
 @sensor(job=job_eln)
-def eln_folder_monitor_sensor(context):
+def kvazar_folder_monitor_sensor(context):
     """
     Сенсор для мониторинга папки DATA_FOLDER:
       - Не допускает повторных запусков для файла, если предыдущий Run ещё идёт.
       - Если предыдущий Run успешен — удаляет файл.
       - Если предыдущий Run завершился ошибкой — перезапускает.
     """
-
+    sensor_config = context.sensor_config
+    mapping_file = sensor_config["mapping_file"]
+    data_folder = sensor_config["data_folder"]
+    table_name = sensor_config["table_name"]
     sensor_state = _load_state(context)  # {filename: run_key}
 
     # 1. Проверяем наличие mapping.json
-    if not os.path.exists(MAPPING_FILE):
-        context.log.info(f"❌ Файл маппинга {MAPPING_FILE} не найден.")
+    if not os.path.exists(mapping_file):
+        context.log.info(f"❌ Файл маппинга {mapping_file} не найден.")
         yield SkipReason("Mapping file not found.")
         return
 
-    with open(MAPPING_FILE, "r", encoding="utf-8") as f:
+    with open(mapping_file, "r", encoding="utf-8") as f:
         mapping = json.load(f)
-    table_config = mapping.get("tables", {}).get(TABLE_NAME)
+    table_config = mapping.get("tables", {}).get(table_name)
     if not table_config:
-        context.log.info(f"❌ Настройки для таблицы '{TABLE_NAME}' не найдены в {MAPPING_FILE}.")
+        context.log.info(f"❌ Настройки для таблицы '{table_name}' не найдены в {mapping_file}.")
         yield SkipReason("Mapping config for table not found.")
         return
 
@@ -50,15 +52,15 @@ def eln_folder_monitor_sensor(context):
     file_format = table_config.get("file", {}).get("file_format", "")
     valid_pattern = f"{file_pattern}.{file_format}"
 
-    # 3. Проверяем папку с данными
-    if not os.path.exists(DATA_FOLDER):
-        context.log.info(f"❌ Папка {DATA_FOLDER} не найдена.")
+    # 3. Проверяем наличие папки с данными
+    if not os.path.exists(data_folder):
+        context.log.info(f"❌ Папка {data_folder} не найдена.")
         yield SkipReason("Data folder not found.")
         return
 
-    files = os.listdir(DATA_FOLDER)
+    files = os.listdir(data_folder)
     if not files:
-        context.log.info("📂 Папка DATA_FOLDER пуста, пропускаем тик.")
+        context.log.info(f"📂 Папка {data_folder} пуста, пропускаем тик.")
         yield SkipReason("Нет файлов в папке.")
         return
 
@@ -68,7 +70,7 @@ def eln_folder_monitor_sensor(context):
 
     # 4. Разделяем файлы на валидные и невалидные
     for file in files:
-        file_path = os.path.join(DATA_FOLDER, file)
+        file_path = os.path.join(data_folder, file)
         if fnmatch.fnmatch(file, valid_pattern):
             mod_time = os.path.getmtime(file_path)
             age = now - mod_time
@@ -81,7 +83,7 @@ def eln_folder_monitor_sensor(context):
 
     # 5. Удаляем невалидные файлы
     for file in invalid_files:
-        file_path = os.path.join(DATA_FOLDER, file)
+        file_path = os.path.join(data_folder, file)
         try:
             os.remove(file_path)
             context.log.info(f"Удалён невалидный файл: {file_path}")
@@ -95,7 +97,7 @@ def eln_folder_monitor_sensor(context):
 
     # 6. Для каждого валидного файла смотрим, не обрабатывается ли он уже
     for file in valid_files:
-        file_path = os.path.join(DATA_FOLDER, file)
+        file_path = os.path.join(data_folder, file)
         existing_run_key = sensor_state.get(file)
 
         if existing_run_key:
@@ -144,11 +146,11 @@ def eln_folder_monitor_sensor(context):
 
             run_config = {
                 "ops": {
-                    "eln_extract": {
+                    "kvazar_extract": {
                         "config": {
-                            "data_folder": DATA_FOLDER,
-                            "mapping_file": MAPPING_FILE,
-                            "table_name": TABLE_NAME,
+                            "data_folder": data_folder,
+                            "mapping_file": mapping_file,
+                            "table_name": table_name,
                         }
                     }
                 }

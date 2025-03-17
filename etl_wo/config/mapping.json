@@ -230,6 +230,146 @@
       ],
       "encoding": "utf-8",
       "delimiter": ";"
+    },
+    "load_data_emd": {
+      "file": {
+        "file_pattern": "Журнал ЭМД*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "ИД": "epmd_id",
+        "ИД исходного ЭПМЗ": "original_epmz_id",
+        "Дата документа": "document_date",
+        "Тип документа": "document_type",
+        "Врач": "doctor",
+        "Обособленное подразделение": "branch",
+        "Подразделение": "subdivision",
+        "Пациент": "patient",
+        "Дата формирования электронного документа": "formation_date",
+        "Наличие подписи врача": "doctor_signature",
+        "Наличие подписи МО": "organization_signature",
+        "Дата отправки в РИР.РЭМД": "sending_date",
+        "Статус отправки в РИР.РЭМД": "sending_status",
+        "Регистрационный номер": "registration_number",
+        "Детали статуса отправки": "status_details"
+      },
+      "column_check": [
+        "epmd_id"
+      ],
+      "encoding": "cp1251",
+      "delimiter": ";"
+    },
+    "load_data_recipes": {
+      "file": {
+        "file_pattern": "Рецепты *",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Номер": "number",
+        "Серия": "series",
+        "Тип рецепта": "recipe_type",
+        "Дата": "date",
+        "ЭЦП": "digital_signature",
+        "Владелец подписи": "signature_owner",
+        "Организация": "organization",
+        "Подразделение": "subdivision",
+        "статус отправки РИР/ФАРМ": "sending_status_rir_farm",
+        "Дополнительная информация по статусу отправки в РИР": "additional_status_info_rir",
+        "Статус": "status",
+        "Дата изменения статуса": "status_change_date",
+        "Автор статуса": "status_author",
+        "1ЭР (статус отправки)": "first_er_status",
+        "Верификация ЭМД": "emd_verification",
+        "Статус отправки в РЭМД": "sending_status_remd",
+        "Дополнительная информация по статусу отправки в РЭМД": "additional_status_info_remd",
+        "Срок действия": "validity_period",
+        "Ф.И.О. пациента": "patient_full_name",
+        "Дата рождения пациента": "patient_birth_date",
+        "СНИЛС пациента": "patient_snils",
+        "Код диагноза": "diagnosis_code",
+        "Название диагноза": "diagnosis_name",
+        "Название льготной категории": "benefit_category_name",
+        "Тип льготной категории": "benefit_category_type",
+        "Источник финансирования": "financing_source",
+        "Ф.И.О. врача": "doctor_full_name",
+        "Должность врача": "doctor_position",
+        "Лекарственный препарат": "medicinal_product",
+        "ТРН": "trn",
+        "МНН": "inn",
+        "Кол-во/Всего назначено": "quantity_total_prescribed",
+        "Процент оплаты": "payment_percentage"
+      },
+      "column_check": [
+        "number"
+      ],
+      "encoding": "cp1251",
+      "delimiter": ";"
+    },
+    "load_data_death": {
+      "file": {
+        "file_pattern": "Смертность*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Серия": "series",
+        "Номер": "number",
+        "ИСПОРЧЕНО": "damaged",
+        "Дубликат": "duplicate",
+        "Перинатальная": "perinatal",
+        "Дата выдачи": "issue_date",
+        "Тип": "mortality_type",
+        "Дата отправки ЭМД": "emd_sending_date",
+        "Статус отправки ЭМД": "emd_sending_status",
+        "ЭМД ошибка": "emd_error",
+        "Создавший": "creator",
+        "Врач": "doctor",
+        "ФИО умершего(ей)": "deceased_full_name",
+        "Дата рождения": "birth_date",
+        "Дата смерти": "death_date",
+        "Пол": "gender",
+        "Возраст,лет": "age",
+        "Первоначальная (статистика)": "initial_statistic",
+        "Причина (а)": "reason_a",
+        "Причина (б)": "reason_b",
+        "Причина (в)": "reason_c",
+        "Причина (г)": "reason_d",
+        "Регион": "region",
+        "Район": "district",
+        "Город / Населенный пункт": "city_or_locality",
+        "Улица": "street",
+        "Дом": "house",
+        "Квартира": "apartment",
+        "Прикрепление": "attachment"
+      },
+      "column_check": [
+        "series",
+        "number"
+      ],
+      "encoding": "cp1251",
+      "delimiter": ";"
+    },
+    "load_data_reference": {
+      "file": {
+        "file_pattern": "Справки*",
+        "file_format": "csv"
+      },
+      "mapping_fields": {
+        "Серия и номер справки": "series_number",
+        "Дата выдачи": "issue_date",
+        "ФИО": "full_name",
+        "Дата рождения": "birth_date",
+        "Врач": "doctor",
+        "Организация выдавшая документ": "organization",
+        "Вид справки": "reference_type",
+        "Заключение": "conclusion",
+        "Статус": "status",
+        "Ошибки по справке": "errors"
+      },
+      "column_check": [
+        "series_number"
+      ],
+      "encoding": "cp1251",
+      "delimiter": ";"
     }
   }
 }

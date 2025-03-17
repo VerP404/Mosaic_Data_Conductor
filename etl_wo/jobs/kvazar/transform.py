@@ -1,21 +1,17 @@
-import os
 import json
-import pandas as pd
 from dagster import asset, Field, String, OpExecutionContext, AssetIn
 from etl_wo.common.connect_db import connect_to_db
 from etl_wo.config.config import ORGANIZATIONS
-from etl_wo.jobs.eln.flow_config import MAPPING_FILE, TABLE_NAME
 
 
 @asset(
     config_schema={
-        "mapping_file": Field(String, default_value=MAPPING_FILE),
-        "table_name": Field(String, default_value=TABLE_NAME),
-        "db_alias": Field(String, default_value="default"),
+        "mapping_file": Field(String),
+        "table_name": Field(String)
     },
-    ins={"eln_extract": AssetIn()}  # меняем ключ с "sick_leave_extract" на "eln_extract"
+    ins={"kvazar_extract": AssetIn()}
 )
-def eln_transform(context: OpExecutionContext, eln_extract: dict) -> dict:
+def kvazar_transform(context: OpExecutionContext, kvazar_extract: dict) -> dict:
     """
     Универсальная трансформация данных для sick_leave:
       1. Загружает настройки маппинга из mapping.json и переименовывает столбцы.
@@ -27,10 +23,9 @@ def eln_transform(context: OpExecutionContext, eln_extract: dict) -> dict:
     config = context.op_config
     mapping_file = config["mapping_file"]
     table_name = config["table_name"]
-    db_alias = config["db_alias"]
 
     # Извлекаем DataFrame из предыдущего этапа
-    df = eln_extract.get("data")
+    df = kvazar_extract.get("data")
     if df is None:
         context.log.error("❌ Ошибка: Нет данных для трансформации!")
         raise ValueError("Нет данных для трансформации.")
@@ -47,7 +42,7 @@ def eln_transform(context: OpExecutionContext, eln_extract: dict) -> dict:
     df = df[list(column_mapping.values())]
 
     # Получаем обязательные столбцы (varchar) из схемы таблицы в базе данных
-    engine, conn = connect_to_db(db_alias=db_alias, organization=ORGANIZATIONS, context=context)
+    engine, conn = connect_to_db(organization=ORGANIZATIONS, context=context)
     sql = f"""
       SELECT column_name 
       FROM information_schema.columns 

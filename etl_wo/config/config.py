@@ -41,4 +41,4 @@ DATABASES = {
     }
 }
 
-ORGANIZATIONS = os.environ.get('ORGANIZATIONS', 'default11111')
+ORGANIZATIONS = os.environ.get('ORGANIZATIONS', 'МозаикаМед')
