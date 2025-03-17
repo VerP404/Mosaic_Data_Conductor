@@ -10,7 +10,6 @@ from etl_wo.jobs.eln.flow_config import DATA_FOLDER, MAPPING_FILE, TABLE_NAME
 # Порог времени, чтобы считать, что файл полностью загружен (в секундах)
 MIN_FILE_AGE_SECONDS = 60
 
-
 @sensor(job=job_eln)
 def eln_folder_monitor_sensor(context):
     """
@@ -20,12 +19,13 @@ def eln_folder_monitor_sensor(context):
     2. Проверяет наличие файлов в папке DATA_FOLDER.
     3. Если файл соответствует шаблону, дополнительно проверяет, что файл не менялся в течение MIN_FILE_AGE_SECONDS.
     4. Если файл не соответствует шаблону – удаляет его.
-    5. При наличии валидного файла инициирует запуск джобы обновления.
+    5. Для каждого валидного файла инициирует запуск джобы (без run_key, чтобы запускался каждый раз).
     """
     # Проверяем наличие файла mapping.json
     if not os.path.exists(MAPPING_FILE):
         context.log.info(f"❌ Файл маппинга {MAPPING_FILE} не найден.")
-        return SkipReason("Mapping file not found.")
+        yield SkipReason("Mapping file not found.")
+        return
 
     with open(MAPPING_FILE, "r", encoding="utf-8") as f:
         mapping = json.load(f)
@@ -33,7 +33,8 @@ def eln_folder_monitor_sensor(context):
     table_config = mapping.get("tables", {}).get(TABLE_NAME)
     if not table_config:
         context.log.info(f"❌ Настройки для таблицы '{TABLE_NAME}' не найдены в {MAPPING_FILE}.")
-        return SkipReason("Mapping config for table not found.")
+        yield SkipReason("Mapping config for table not found.")
+        return
 
     file_pattern = table_config.get("file", {}).get("file_pattern", "")
     file_format = table_config.get("file", {}).get("file_format", "")
@@ -43,12 +44,14 @@ def eln_folder_monitor_sensor(context):
     # Проверяем наличие папки с данными
     if not os.path.exists(DATA_FOLDER):
         context.log.info(f"❌ Папка {DATA_FOLDER} не найдена.")
-        return SkipReason("Data folder not found.")
+        yield SkipReason("Data folder not found.")
+        return
 
     files = os.listdir(DATA_FOLDER)
     if not files:
         context.log.info("📂 Папка DATA_FOLDER пуста, пропускаем тик.")
-        return SkipReason("Нет файлов в папке.")
+        yield SkipReason("Нет файлов в папке.")
+        return
 
     valid_files = []
     invalid_files = []
@@ -76,10 +79,17 @@ def eln_folder_monitor_sensor(context):
         except Exception as e:
             context.log.error(f"Не удалось удалить файл {file_path}: {e}")
 
-    if valid_files:
-        # Используем имя последнего файла в списке как run_key, чтобы избежать повторного запуска для того же файла
-        run_key = valid_files[-1]
-        # Конфигурация для запуска джобы, все параметры передаются в операцию eln_extract
+    if not valid_files:
+        context.log.info("Нет валидных файлов для запуска обновления.")
+        yield SkipReason("Нет валидных файлов.")
+        return
+
+    # Для каждого валидного файла формируем RunRequest
+    for file in valid_files:
+        file_path = os.path.join(DATA_FOLDER, file)
+        context.log.info(f"Запуск процесса обновления для файла: {file}")
+
+        # Конфигурация для запуска джобы
         run_config = {
             "ops": {
                 "eln_extract": {
@@ -91,8 +101,5 @@ def eln_folder_monitor_sensor(context):
                 }
             }
         }
-        context.log.info(f"Запуск процесса обновления для файла: {run_key}")
-        return RunRequest(run_key=run_key, run_config=run_config)
-    else:
-        context.log.info("Нет валидных файлов для запуска обновления.")
-        return SkipReason("Нет валидных файлов.")
+        # ВАЖНО: не указываем run_key, чтобы Dagster не блокировал повторные запуски
+        yield RunRequest(run_config=run_config)
