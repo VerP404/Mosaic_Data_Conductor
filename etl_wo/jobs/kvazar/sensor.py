@@ -26,7 +26,7 @@ def _load_state(context) -> dict:
 
 def _save_state(context, state: dict):
     """Сохраняем словарь {filename: run_key} в cursor сенсора."""
-    context.update_cursor(json.dumps(state))
+    context.update_cursor(json.dumps(state, ensure_ascii=False))
 
 
 def create_sensor(job, sensor_name, data_folder, table_name, mapping_file):
