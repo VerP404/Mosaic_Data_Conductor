@@ -14,201 +14,52 @@ kvazar_assets = [
 ]
 
 
-@job(
-    name="job_eln",
-    config={
-        "ops": {
-            "kvazar_db_check": {
-                "config": {
-                    "organization": ORGANIZATIONS,
-                    "tables": ["load_data_sick_leave_sheets"]
-                }
-            },
-            "kvazar_extract": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "data_folder": "etl_wo/data/eln",
-                    "table_name": "load_data_sick_leave_sheets"
-                }
-            },
-            "kvazar_transform": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "table_name": "load_data_sick_leave_sheets"
-                }
-            },
-            "kvazar_load": {
-                "config": {
-                    "table_name": "load_data_sick_leave_sheets",
-                    "data_folder": "etl_wo/data/eln",
-                    "mapping_file": "etl_wo/config/mapping.json"
-                }
-            }
-        }
-    }
-)
-def job_eln():
-    db_result = kvazar_db_check()
-    extract_result = kvazar_extract(db_result)
-    transform_result = kvazar_transform(extract_result)
-    kvazar_load(transform_result)
-
-
-@job(
-    name="job_emd",
-    config={
-        "ops": {
-            "kvazar_db_check": {
-                "config": {
-                    "organization": ORGANIZATIONS,
-                    "tables": ["load_data_emd"]
-                }
-            },
-            "kvazar_extract": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "data_folder": "etl_wo/data/emd",
-                    "table_name": "load_data_emd"
-                }
-            },
-            "kvazar_transform": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "table_name": "load_data_emd"
-                }
-            },
-            "kvazar_load": {
-                "config": {
-                    "table_name": "load_data_emd",
-                    "data_folder": "etl_wo/data/emd",
-                    "mapping_file": "etl_wo/config/mapping.json"
+def create_job(job_name, table_name, data_folder):
+    @job(
+        name=job_name,
+        config={
+            "ops": {
+                "kvazar_db_check": {
+                    "config": {
+                        "organization": ORGANIZATIONS,
+                        "tables": [table_name]
+                    }
+                },
+                "kvazar_extract": {
+                    "config": {
+                        "mapping_file": "etl_wo/config/mapping.json",
+                        "data_folder": f"etl_wo/data/kvazar/{data_folder}",
+                        "table_name": table_name
+                    }
+                },
+                "kvazar_transform": {
+                    "config": {
+                        "mapping_file": "etl_wo/config/mapping.json",
+                        "table_name": table_name
+                    }
+                },
+                "kvazar_load": {
+                    "config": {
+                        "table_name": table_name,
+                        "data_folder": f"etl_wo/data/kvazar/{data_folder}",
+                        "mapping_file": "etl_wo/config/mapping.json"
+                    }
                 }
             }
         }
-    }
-)
-def job_emd():
-    db_result = kvazar_db_check()
-    extract_result = kvazar_extract(db_result)
-    transform_result = kvazar_transform(extract_result)
-    kvazar_load(transform_result)
+    )
+    def _job():
+        db_result = kvazar_db_check()
+        extract_result = kvazar_extract(db_result)
+        transform_result = kvazar_transform(extract_result)
+        kvazar_load(transform_result)
+
+    return _job
 
 
-@job(
-    name="job_recipes",
-    config={
-        "ops": {
-            "kvazar_db_check": {
-                "config": {
-                    "organization": ORGANIZATIONS,
-                    "tables": ["load_data_recipes"]
-                }
-            },
-            "kvazar_extract": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "data_folder": "etl_wo/data/recipe",
-                    "table_name": "load_data_recipes"
-                }
-            },
-            "kvazar_transform": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "table_name": "load_data_recipes"
-                }
-            },
-            "kvazar_load": {
-                "config": {
-                    "table_name": "load_data_recipes",
-                    "data_folder": "etl_wo/data/recipe",
-                    "mapping_file": "etl_wo/config/mapping.json"
-                }
-            }
-        }
-    }
-)
-def job_recipes():
-    db_result = kvazar_db_check()
-    extract_result = kvazar_extract(db_result)
-    transform_result = kvazar_transform(extract_result)
-    kvazar_load(transform_result)
-
-
-@job(
-    name="job_death",
-    config={
-        "ops": {
-            "kvazar_db_check": {
-                "config": {
-                    "organization": ORGANIZATIONS,
-                    "tables": ["load_data_death"]
-                }
-            },
-            "kvazar_extract": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "data_folder": "etl_wo/data/death",
-                    "table_name": "load_data_death"
-                }
-            },
-            "kvazar_transform": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "table_name": "load_data_death"
-                }
-            },
-            "kvazar_load": {
-                "config": {
-                    "table_name": "load_data_death",
-                    "data_folder": "etl_wo/data/death",
-                    "mapping_file": "etl_wo/config/mapping.json"
-                }
-            }
-        }
-    }
-)
-def job_death():
-    db_result = kvazar_db_check()
-    extract_result = kvazar_extract(db_result)
-    transform_result = kvazar_transform(extract_result)
-    kvazar_load(transform_result)
-
-
-@job(
-    name="job_reference",
-    config={
-        "ops": {
-            "kvazar_db_check": {
-                "config": {
-                    "organization": ORGANIZATIONS,
-                    "tables": ["load_data_reference"]
-                }
-            },
-            "kvazar_extract": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "data_folder": "etl_wo/data/reference",
-                    "table_name": "load_data_reference"
-                }
-            },
-            "kvazar_transform": {
-                "config": {
-                    "mapping_file": "etl_wo/config/mapping.json",
-                    "table_name": "load_data_reference"
-                }
-            },
-            "kvazar_load": {
-                "config": {
-                    "table_name": "load_data_reference",
-                    "data_folder": "etl_wo/data/reference",
-                    "mapping_file": "etl_wo/config/mapping.json"
-                }
-            }
-        }
-    }
-)
-def job_reference():
-    db_result = kvazar_db_check()
-    extract_result = kvazar_extract(db_result)
-    transform_result = kvazar_transform(extract_result)
-    kvazar_load(transform_result)
+# Создание джобов с помощью конструктора
+kvazar_job_eln = create_job("kvazar_job_eln", "load_data_sick_leave_sheets", "eln")
+kvazar_job_emd = create_job("kvazar_job_emd", "load_data_emd", "emd")
+kvazar_job_recipes = create_job("kvazar_job_recipes", "load_data_recipes", "recipe")
+kvazar_job_death = create_job("kvazar_job_death", "load_data_death", "death")
+kvazar_job_reference = create_job("kvazar_job_reference", "load_data_reference", "reference")

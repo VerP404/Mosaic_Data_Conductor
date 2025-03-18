@@ -15,4 +15,7 @@ git pull
 # Установка зависимостей
 pip install -r requirements.txt
 
+# Создание структуры папок
+python create_folders.py
+
 echo "Обновление Dagster-приложения завершено."
